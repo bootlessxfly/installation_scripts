@@ -7,8 +7,8 @@ DNS=""
 PURGE=false
 ELASTIC_PASSWORD=""
 CLEARML_HOST_IP=""
-CLEARML_GIT_USER=""
-CLEARML_GIT_PASS=""
+CLEARML_AGENT_GIT_USER=""
+CLEARML_AGENT_GIT_PASS=""
 GRAFANA_ADMIN_PASS="admin"
 NO_IP_CONFIG_NEEDED=false
 # Get the absolute path of the calling script
@@ -79,11 +79,11 @@ while (( "$#" )); do
       shift 2
       ;;
     --clearml-git-user)
-      CLEARML_GIT_USER=$2
+      CLEARML_AGENT_GIT_USER=$2
       shift 2
       ;;
     --clearml-git-pass)
-      CLEARML_GIT_PASS=$2
+      CLEARML_AGENT_GIT_PASS=$2
       shift 2
       ;;
     --grafana-admin-pass)
@@ -107,7 +107,7 @@ done
 
 # Check if the Elastic search parameters have been provided
 if [ -z "$ELASTIC_PASSWORD" ] || [ -z "$CLEARML_HOST_IP" ] || [ -z "$CLEARML_AGENT_GIT_USER" ] || [ -z "$CLEARML_AGENT_GIT_PASS" ]; then
-  echo "You must provide Elastic password, ClearML host IP, ClearML agent git user, ClearML agent git password, Grafana admin password, new Grafana user, and new Grafana user password."
+  echo "You must provide Elastic password, ClearML host IP, ClearML agent git user, ClearML agent git password."
   print_help
   exit 1
 fi
@@ -128,7 +128,7 @@ else
   CLEARML_INSTALL_CMD+="--ip $IP --gateway $GATEWAY --interface $INTERFACE --dns $DNS "
 fi
 
-CLEARML_INSTALL_CMD+="--elastic-password $ELASTIC_PASSWORD --clearml-host-ip $CLEARML_HOST_IP --clearml-git-user $CLEARML_GIT_USER --clearml-git-pass $CLEARML_GIT_PASS "
+CLEARML_INSTALL_CMD+="--elastic-password $ELASTIC_PASSWORD --clearml-host-ip $CLEARML_HOST_IP --clearml-git-user $CLEARML_AGENT_GIT_USER --clearml-git-pass $CLEARML_AGENT_GIT_PASS "
 
 if [[ $PURGE == true ]]; then
   CLEARML_INSTALL_CMD+="--purge"
