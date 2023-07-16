@@ -11,7 +11,11 @@ CLEARML_GIT_USER=""
 CLEARML_GIT_PASS=""
 GRAFANA_ADMIN_PASS="admin"
 NO_IP_CONFIG_NEEDED=false
-CLEARML_SCRIPT_PATH="../scripts/install_clearml-server.sh"
+# Get the absolute path of the calling script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# Set the CLEARML_SCRIPT_PATH variable
+CLEARML_SCRIPT_PATH="$SCRIPT_DIR/install_clearml-server.sh"
 
 print_help() {
   echo "Usage: $0 [options...]"
