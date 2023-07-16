@@ -137,5 +137,7 @@ fi
 # Call the ClearML installation script
 eval $CLEARML_INSTALL_CMD
 
+echo "Sleeping for 60 seconds to allow system to come up before running post_install"
+sleep 60
 # Call the post-installation script
 bash $CLEARML_POST_INSTALL --grafana-admin-password $GRAFANA_ADMIN_PASS
