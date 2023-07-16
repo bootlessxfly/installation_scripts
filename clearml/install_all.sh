@@ -15,34 +15,47 @@ NO_IP_CONFIG_NEEDED=false
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # Set the CLEARML_SCRIPT_PATH variable
-CLEARML_SCRIPT_PATH="$SCRIPT_DIR/install_clearml-server.sh"
+CLEARML_SCRIPT_PATH="$SCRIPT_DIR/deploy_clearml-server_cluster.sh"
+
+CLEARML_POST_INSTALL="$SCRIPT_DIR/clearml_server_post_install.sh"
 
 print_help() {
   echo "Usage: $0 [options...]"
   echo
   echo "Options:"
-  echo "  --ip                    The IP address for the static IP setup."
-  echo "  --gateway               The Gateway for the static IP setup."
-  echo "  --interface             The Network Interface for the static IP setup."
+  echo "  --ip                    The IP address for the static IP setup. [MANDATORY]"
+  echo "  --gateway               The Gateway for the static IP setup. [MANDATORY]"
+  echo "  --interface             The Network Interface for the static IP setup. [MANDATORY]"
   echo "  --dns                   The DNS servers for the static IP setup."
   echo "  --purge                 Purge existing docker compose deployment before deploying."
-  echo "  --elastic-password      The password for the Elastic search setup."
-  echo "  --clearml-host-ip       The IP address for the ClearML host."
-  echo "  --clearml-git-user      The Git username for the ClearML agent."
-  echo "  --clearml-git-pass      The Git password(API Token) for the ClearML agent."
+  echo "  --elastic-password      The password for the Elastic search setup. [MANDATORY]"
+  echo "  --clearml-host-ip       The IP address for the ClearML host. [MANDATORY]"
+  echo "  --clearml-git-user      The Git username for the ClearML agent. [MANDATORY]"
+  echo "  --clearml-git-pass      The Git password(API Token) for the ClearML agent. [MANDATORY]"
   echo "  --grafana-admin-pass    The Grafana admin password. Defaults to 'admin'"
-  echo "  --no-ip-config-needed   Skip the IP configuration step."
+  echo "  --no-ip-config-needed   Skip the IP configuration step. [Makes IP config not mandatory]"
   echo "  --help                  Display this help and exit."
+}
+
+
+# A function that checks if an IP address is valid
+validate_ip() {
+  if ! [[ $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "Invalid IP format: $1"
+    exit 1
+  fi
 }
 
 while (( "$#" )); do
   case "$1" in
     --ip)
-      IP=$2
+      IP_ADDRESS=$2
+      validate_ip $IP_ADDRESS
       shift 2
       ;;
     --gateway)
       GATEWAY=$2
+      validate_ip $GATEWAY
       shift 2
       ;;
     --interface)
@@ -92,6 +105,20 @@ while (( "$#" )); do
   esac
 done
 
+# Check if the Elastic search parameters have been provided
+if [ -z "$ELASTIC_PASSWORD" ] || [ -z "$CLEARML_HOST_IP" ] || [ -z "$CLEARML_AGENT_GIT_USER" ] || [ -z "$CLEARML_AGENT_GIT_PASS" ]; then
+  echo "You must provide Elastic password, ClearML host IP, ClearML agent git user, ClearML agent git password, Grafana admin password, new Grafana user, and new Grafana user password."
+  print_help
+  exit 1
+fi
+
+# Check if IP, gateway, and interface parameters have been provided
+if [ "$NO_IP_CONFIG_NEEDED" == "false" ] && ([ -z "$IP_ADDRESS" ] || [ -z "$GATEWAY" ] || [ -z "$INTERFACE" ]); then
+  echo "You must provide an IP address, a gateway, and a network interface, or use the '--no-ip-config-needed' option."
+  print_help
+  exit 1
+fi
+
 # Construct the ClearML installation script command
 CLEARML_INSTALL_CMD="bash $CLEARML_SCRIPT_PATH "
 
@@ -111,4 +138,4 @@ fi
 eval $CLEARML_INSTALL_CMD
 
 # Call the post-installation script
-bash post_install.sh --grafana-admin-password $GRAFANA_ADMIN_PASS
+bash $CLEARML_POST_INSTALL --grafana-admin-password $GRAFANA_ADMIN_PASS
