@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Check if running user is root
+if [[ $EUID -eq 0 ]]; then
+  echo "WARNING: This script is running as root. It is recommended to run it as a non-root user."
+fi
+
 # Set default resource limits
 GRAFANA_CPU_LIMIT=${GRAFANA_CPU_LIMIT:-"0.5"}
 GRAFANA_MEMORY_LIMIT=${GRAFANA_MEMORY_LIMIT:-"2G"}
