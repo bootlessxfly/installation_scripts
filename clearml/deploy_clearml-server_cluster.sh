@@ -5,8 +5,8 @@ GRAFANA_CPU_LIMIT=${GRAFANA_CPU_LIMIT:-"0.5"}
 GRAFANA_MEMORY_LIMIT=${GRAFANA_MEMORY_LIMIT:-"2G"}
 PROMETHEUS_CPU_LIMIT=${PROMETHEUS_CPU_LIMIT:-"0.5"}
 PROMETHEUS_MEMORY_LIMIT=${PROMETHEUS_MEMORY_LIMIT:-"6G"}
-CLEARML_CPU_LIMIT=${CLEARML_CPU_LIMIT:-"1"}
-CLEARML_MEMORY_LIMIT=${CLEARML_MEMORY_LIMIT:-"8G"}
+# CLEARML_CPU_LIMIT=${CLEARML_CPU_LIMIT:-"1"}
+# CLEARML_MEMORY_LIMIT=${CLEARML_MEMORY_LIMIT:-"8G"}
 
 # Default DNS addresses
 DNS=${DNS:-"8.8.8.8,8.8.4.4"}
@@ -48,8 +48,6 @@ print_help() {
   echo "  --grafana-memory-limit          Memory limit for Grafana (optional, defaults to 2G)"
   echo "  --prometheus-cpu-limit          CPU limit for Prometheus (optional, defaults to 0.5)"
   echo "  --prometheus-memory-limit       Memory limit for Prometheus (optional, defaults to 6G)"
-  echo "  --clearml-cpu-limit             CPU limit for ClearML (optional, defaults to 1)"
-  echo "  --clearml-memory-limit          Memory limit for ClearML (optional, defaults to 8G)"
   echo "  --help                          Display this help and exit."
 }
 
@@ -130,14 +128,6 @@ while (( "$#" )); do
       ;;
     --prometheus-memory-limit)
       PROMETHEUS_MEMORY_LIMIT=$2
-      shift 2
-      ;;
-    --clearml-cpu-limit)
-      CLEARML_CPU_LIMIT=$2
-      shift 2
-      ;;
-    --clearml-memory-limit)
-      CLEARML_MEMORY_LIMIT=$2
       shift 2
       ;;
     --help)
@@ -268,16 +258,14 @@ services:
     image: prom/prometheus:latest
     ports:
       - 9090:9090
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - backend
       - frontend
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1024M
+          cpus: '$PROMETHEUS_CPU_LIMIT'
+          memory: $PROMETHEUS_MEMORY_LIMIT
 
   grafana:
     image: grafana/grafana:latest
@@ -289,16 +277,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1024M
-
-networks:
-  backend:
-    driver: bridge
-  frontend:
-    driver: bridge
-
-EOF
+          cpus: '$GRAFANA_CPU_LIMIT'
+          memory: $GRAFANA_MEMORY_LIMIT
 
 # Prometheus config
 # Create Prometheus config file

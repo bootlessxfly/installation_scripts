@@ -19,22 +19,29 @@ CLEARML_SCRIPT_PATH="$SCRIPT_DIR/deploy_clearml-server_cluster.sh"
 
 CLEARML_POST_INSTALL="$SCRIPT_DIR/clearml_server_post_install.sh"
 
+# A function that prints a help menu
 print_help() {
-  echo "Usage: $0 [options...]"
-  echo
+  echo "Usage: $0 [OPTIONS]..."
+  echo "Deploy a Docker Compose deployment."
+  echo "Example: $0 --ip 192.168.1.2 --gateway 192.168.1.1 --interface eth0 --dns 1.1.1.1,1.0.0.1 --purge --elastic-password my_password --clearml-host-ip 192.168.1.2 --clearml-git-user my_user --clearml-git-pass my_pass --grafana-admin-pass admin_pass --grafana-new-user new_user --grafana-new-pass new_pass"
+  echo "Example (No IP config): $0 --no-ip-config-needed --purge --elastic-password my_password --clearml-host-ip 192.168.1.3 --clearml-git-user my_user --clearml-git-pass my_pass --grafana-admin-pass admin_pass --grafana-new-user new_user --grafana-new-pass new_pass"
+  echo ""
   echo "Options:"
-  echo "  --ip                    The IP address for the static IP setup. [MANDATORY]"
-  echo "  --gateway               The Gateway for the static IP setup. [MANDATORY]"
-  echo "  --interface             The Network Interface for the static IP setup. [MANDATORY]"
-  echo "  --dns                   The DNS servers for the static IP setup."
-  echo "  --purge                 Purge existing docker compose deployment before deploying."
-  echo "  --elastic-password      The password for the Elastic search setup. [MANDATORY]"
-  echo "  --clearml-host-ip       The IP address for the ClearML host. [MANDATORY]"
-  echo "  --clearml-git-user      The Git username for the ClearML agent. [MANDATORY]"
-  echo "  --clearml-git-pass      The Git password(API Token) for the ClearML agent. [MANDATORY]"
-  echo "  --grafana-admin-pass    The Grafana admin password. Defaults to 'admin'"
-  echo "  --no-ip-config-needed   Skip the IP configuration step. [Makes IP config not mandatory]"
-  echo "  --help                  Display this help and exit."
+  echo "  --purge                         Purge existing docker compose deployment before deploying."
+  echo "  --ip                            The IP address for the static IP setup."
+  echo "  --gateway                       The Gateway for the static IP setup."
+  echo "  --interface                     The Network Interface for the static IP setup."
+  echo "  --dns                           The DNS servers for the static IP setup (optional, defaults to Google's DNS)."
+  echo "  --elastic-password              The password for the Elastic search setup.[Mandatory]"
+  echo "  --clearml-host-ip               The IP address for the ClearML host.[Mandatory]"
+  echo "  --clearml-git-user              The Git username for the ClearML agent.[Mandatory]"
+  echo "  --clearml-git-pass              The Git password(API Token) for the ClearML agent.[Mandatory]"
+  echo "  --no-ip-config-needed           Skip the IP configuration step.[Mandatory if not providing IP config]"
+  echo "  --grafana-cpu-limit             CPU limit for Grafana (optional, defaults to 0.5)"
+  echo "  --grafana-memory-limit          Memory limit for Grafana (optional, defaults to 2G)"
+  echo "  --prometheus-cpu-limit          CPU limit for Prometheus (optional, defaults to 0.5)"
+  echo "  --prometheus-memory-limit       Memory limit for Prometheus (optional, defaults to 6G)"
+  echo "  --help                          Display this help and exit."
 }
 
 
@@ -137,7 +144,7 @@ fi
 # Call the ClearML installation script
 eval $CLEARML_INSTALL_CMD
 
-# echo "Sleeping for 60 seconds to allow system to come up before running post_install"
-# sleep 60
-# # Call the post-installation script
-# bash $CLEARML_POST_INSTALL --grafana-admin-password $GRAFANA_ADMIN_PASS
+echo "Sleeping for 60 seconds to allow system to come up before running post_install"
+sleep 60
+# Call the post-installation script
+bash $CLEARML_POST_INSTALL --grafana-admin-password $GRAFANA_ADMIN_PASS
