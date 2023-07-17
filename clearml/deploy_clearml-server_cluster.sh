@@ -161,24 +161,10 @@ fi
 # Check if docker compose exists
 if command -v docker-compose &> /dev/null; then
     # Check if docker compose has been deployed before
-    if [ "$(docker-compose -p $clearml_name -f $DOCKER_COMPOSE_FILE ps -q)" ]; then
+    if [ "$(docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE ps -q)" ]; then
       if [ "$PURGE" == "true" ]; then
         echo "Purging existing docker compose deployment..."
-        sudo docker-compose -p $clearml_name -f $DOCKER_COMPOSE_FILE down
-      else
-        echo "Docker compose has already been deployed. If you want to redeploy, remove the existing deployment manually or use the '--purge' option."
-        exit 1
-      fi
-    fi
-fi
-
-# Check if monitoring compose exists
-if command -v docker-compose &> /dev/null; then
-    # Check if docker compose has been deployed before
-    if [ "$(docker-compose -p $monitoring_name -f $MONITORING_FILE ps -q)" ]; then
-      if [ "$PURGE" == "true" ]; then
-        echo "Purging existing docker compose deployment..."
-        sudo docker-compose -p $monitoring_name -f $MONITORING_FILE down
+        sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE down
       else
         echo "Docker compose has already been deployed. If you want to redeploy, remove the existing deployment manually or use the '--purge' option."
         exit 1
@@ -280,13 +266,6 @@ services:
         limits:
           cpus: '$GRAFANA_CPU_LIMIT'
           memory: $GRAFANA_MEMORY_LIMIT
-
-networks:
-  backend:
-    driver: bridge
-  frontend:
-    driver: bridge
-
 EOF
 
 # Create docker-compose.exporters.yml
@@ -294,7 +273,7 @@ cat > $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS << 'EOF'
 version: "3.6"
 services:
   mongodb_exporter:
-    image: prom/mongodb-exporter:latest
+    image: percona/mongodb_exporter:latest
     networks:
       - backend
     environment:
@@ -317,10 +296,6 @@ services:
     command: --redis.addr=redis://redis:6379
     ports:
       - "9121:9121"
-
-networks:
-  backend:
-    external: true
 EOF
 
 # Prometheus config
@@ -351,6 +326,10 @@ scrape_configs:
 EOF
 
 # Deploy clearml stack with docker compose
-sudo docker-compose -p $clearml_name -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS up -d
-# Deploy Monitoring stack with Docker Compose
-sudo docker-compose -p $monitoring_name -f $MONITORING_FILE up -d
+sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE up -d
+
+echo "Please view logs of your deployment with:"
+echo "sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE logs"
+
+echo "Please run other commands as:"
+echo "sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE [command]"
