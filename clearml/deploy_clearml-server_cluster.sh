@@ -245,6 +245,8 @@ services:
     image: prom/prometheus:latest
     ports:
       - 9090:9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - backend
       - frontend
