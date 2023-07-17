@@ -1,11 +1,18 @@
 #!/bin/bash
 
+# Set default resource limits
+GRAFANA_CPU_LIMIT=${GRAFANA_CPU_LIMIT:-"0.5"}
+GRAFANA_MEMORY_LIMIT=${GRAFANA_MEMORY_LIMIT:-"2G"}
+PROMETHEUS_CPU_LIMIT=${PROMETHEUS_CPU_LIMIT:-"0.5"}
+PROMETHEUS_MEMORY_LIMIT=${PROMETHEUS_MEMORY_LIMIT:-"6G"}
+CLEARML_CPU_LIMIT=${CLEARML_CPU_LIMIT:-"1"}
+CLEARML_MEMORY_LIMIT=${CLEARML_MEMORY_LIMIT:-"8G"}
+
 # Default DNS addresses
 DNS=${DNS:-"8.8.8.8,8.8.4.4"}
 #Default elastic group ID
 ELASTIC_GROUPID="1000"
 
-#
 CONFIG_DIR="/home/$USER/docker-compose-config-clearml-server"
 clearml_name="clearml-server"
 monitoring_name="monitoring"
@@ -27,17 +34,23 @@ print_help() {
   echo "Example (No IP config): $0 --no-ip-config-needed --purge --elastic-password my_password --clearml-host-ip 192.168.1.3 --clearml-git-user my_user --clearml-git-pass my_pass --grafana-admin-pass admin_pass --grafana-new-user new_user --grafana-new-pass new_pass"
   echo ""
   echo "Options:"
-  echo "  --purge                 Purge existing docker compose deployment before deploying."
-  echo "  --ip                    The IP address for the static IP setup."
-  echo "  --gateway               The Gateway for the static IP setup."
-  echo "  --interface             The Network Interface for the static IP setup."
-  echo "  --dns                   The DNS servers for the static IP setup (optional, defaults to Google's DNS)."
-  echo "  --elastic-password      The password for the Elastic search setup.[Mandatory]"
-  echo "  --clearml-host-ip       The IP address for the ClearML host.[Mandatory]"
-  echo "  --clearml-git-user      The Git username for the ClearML agent.[Mandatory]"
-  echo "  --clearml-git-pass      The Git password(API Token) for the ClearML agent.[Mandatory]"
-  echo "  --no-ip-config-needed   Skip the IP configuration step.[Mandatory if not providing IP config]"
-  echo "  --help                  Display this help and exit."
+  echo "  --purge                         Purge existing docker compose deployment before deploying."
+  echo "  --ip                            The IP address for the static IP setup."
+  echo "  --gateway                       The Gateway for the static IP setup."
+  echo "  --interface                     The Network Interface for the static IP setup."
+  echo "  --dns                           The DNS servers for the static IP setup (optional, defaults to Google's DNS)."
+  echo "  --elastic-password              The password for the Elastic search setup.[Mandatory]"
+  echo "  --clearml-host-ip               The IP address for the ClearML host.[Mandatory]"
+  echo "  --clearml-git-user              The Git username for the ClearML agent.[Mandatory]"
+  echo "  --clearml-git-pass              The Git password(API Token) for the ClearML agent.[Mandatory]"
+  echo "  --no-ip-config-needed           Skip the IP configuration step.[Mandatory if not providing IP config]"
+  echo "  --grafana-cpu-limit             CPU limit for Grafana (optional, defaults to 0.5)"
+  echo "  --grafana-memory-limit          Memory limit for Grafana (optional, defaults to 2G)"
+  echo "  --prometheus-cpu-limit          CPU limit for Prometheus (optional, defaults to 0.5)"
+  echo "  --prometheus-memory-limit       Memory limit for Prometheus (optional, defaults to 6G)"
+  echo "  --clearml-cpu-limit             CPU limit for ClearML (optional, defaults to 1)"
+  echo "  --clearml-memory-limit          Memory limit for ClearML (optional, defaults to 8G)"
+  echo "  --help                          Display this help and exit."
 }
 
 # A function that checks if an IP address is valid
@@ -103,6 +116,30 @@ while (( "$#" )); do
       NO_IP_CONFIG_NEEDED=true
       shift
       ;;
+    --grafana-cpu-limit)
+      GRAFANA_CPU_LIMIT=$2
+      shift 2
+      ;;
+    --grafana-memory-limit)
+      GRAFANA_MEMORY_LIMIT=$2
+      shift 2
+      ;;
+    --prometheus-cpu-limit)
+      PROMETHEUS_CPU_LIMIT=$2
+      shift 2
+      ;;
+    --prometheus-memory-limit)
+      PROMETHEUS_MEMORY_LIMIT=$2
+      shift 2
+      ;;
+    --clearml-cpu-limit)
+      CLEARML_CPU_LIMIT=$2
+      shift 2
+      ;;
+    --clearml-memory-limit)
+      CLEARML_MEMORY_LIMIT=$2
+      shift 2
+      ;;
     --help)
       print_help
       exit 0
@@ -128,6 +165,7 @@ if [ "$NO_IP_CONFIG_NEEDED" == "false" ] && ([ -z "$IP_ADDRESS" ] || [ -z "$GATE
   print_help
   exit 1
 fi
+
 
 # Check if docker compose exists
 if command -v docker-compose &> /dev/null; then
