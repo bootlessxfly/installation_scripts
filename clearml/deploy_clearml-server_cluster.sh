@@ -273,7 +273,7 @@ cat > $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS << 'EOF'
 version: "3.6"
 services:
   mongodb_exporter:
-    image: percona/mongodb_exporter:latest
+    image: bitnami/mongodb-exporter:latest
     networks:
       - backend
     environment:
@@ -282,7 +282,7 @@ services:
       - "9216:9216"
 
   elasticsearch_exporter:
-    image: justwatch/elasticsearch_exporter:1.1.0
+    image: justwatch/elasticsearch_exporter:latest
     networks:
       - backend
     command: --es.uri=http://elasticsearch:9200
@@ -290,7 +290,7 @@ services:
       - "9108:9108"
 
   redis_exporter:
-    image: oliver006/redis_exporter:v1.3.4
+    image: oliver006/redis_exporter:latest
     networks:
       - backend
     command: --redis.addr=redis://redis:6379
