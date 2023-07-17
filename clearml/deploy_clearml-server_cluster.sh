@@ -17,6 +17,7 @@ CONFIG_DIR="/home/$USER/docker-compose-config-clearml-server"
 clearml_name="clearml-server"
 monitoring_name="monitoring"
 DOCKER_COMPOSE_FILE="$CONFIG_DIR/$clearml_name-compose.yml"
+DOCKER_COMPOSE_PROMETHEUS_EXPORTERS="$CONFIG_DIR/docker-compose.exporters.yml"
 MONITORING_FILE="$CONFIG_DIR/$monitoring_name-compose.yml"
 
 # Default values
@@ -288,6 +289,40 @@ networks:
 
 EOF
 
+# Create docker-compose.exporters.yml
+cat > docker-compose.exporters.yml << 'EOF'
+version: "3.6"
+services:
+  mongodb_exporter:
+    image: prom/mongodb-exporter:latest
+    networks:
+      - backend
+    environment:
+      MONGODB_URI: mongodb://mongo:27017
+    ports:
+      - "9216:9216"
+
+  elasticsearch_exporter:
+    image: justwatch/elasticsearch_exporter:1.1.0
+    networks:
+      - backend
+    command: --es.uri=http://elasticsearch:9200
+    ports:
+      - "9108:9108"
+
+  redis_exporter:
+    image: oliver006/redis_exporter:v1.3.4
+    networks:
+      - backend
+    command: --redis.addr=redis://redis:6379
+    ports:
+      - "9121:9121"
+
+networks:
+  backend:
+    external: true
+EOF
+
 # Prometheus config
 # Create Prometheus config file
 cat <<EOF > $CONFIG_DIR/prometheus.yml
@@ -296,40 +331,26 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
+
   - job_name: 'prometheus'
+    scrape_interval: 5s
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: 'clearml-webserver'
+  - job_name: 'mongodb'
     static_configs:
-      - targets: ['clearml-webserver:8080']
+      - targets: ['mongodb_exporter:9216']
 
-  - job_name: 'async-delete'
+  - job_name: 'elasticsearch'
     static_configs:
-      - targets: ['async-delete:8080']
+      - targets: ['elasticsearch_exporter:9108']
 
-  - job_name: 'clearml-apiserver'
+  - job_name: 'redis'
     static_configs:
-      - targets: ['clearml-apiserver:8008']
-
-  - job_name: 'clearml-elastic'
-    static_configs:
-      - targets: ['clearml-elastic:9200']
-
-  - job_name: 'clearml-redis'
-    static_configs:
-      - targets: ['clearml-redis:6379']
-
-  - job_name: 'clearml-fileserver'
-    static_configs:
-      - targets: ['clearml-fileserver:8081']
-
-  - job_name: 'clearml-mongo'
-    static_configs:
-      - targets: ['clearml-mongo:27017']
+      - targets: ['redis_exporter:9121']
 EOF
 
 # Deploy clearml stack with docker compose
-sudo docker-compose -p $clearml_name -f $DOCKER_COMPOSE_FILE up -d
+sudo docker-compose -p $clearml_name -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS up -d
 # Deploy Monitoring stack with Docker Compose
 sudo docker-compose -p $monitoring_name -f $MONITORING_FILE up -d
