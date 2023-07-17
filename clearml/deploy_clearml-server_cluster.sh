@@ -345,11 +345,11 @@ exporters='$DOCKER_COMPOSE_PROMETHEUS_EXPORTERS'
 monitors='$MONITORING_FILE'
 
 start() {
-    sudo docker-compose -f $clearml -f $exporters -f $monitors up -d
+    sudo docker-compose -f \$clearml -f \$exporters -f \$monitors up -d
 }
 
 stop() {
-    sudo docker-compose -f $clearml -f $exporters -f $monitors down
+    sudo docker-compose -f \$clearml -f \$exporters -f \$monitors down
 }
 
 restart() {
@@ -358,23 +358,23 @@ restart() {
 }
 
 logs() {
-    sudo docker-compose -f $clearml -f $exporters -f $monitors logs
+    sudo docker-compose -f \$clearml -f \$exporters -f \$monitors logs
 }
 
 pull() {
-    sudo docker-compose -f $clearml -f $exporters -f $monitors pull
+    sudo docker-compose -f \$clearml -f \$exporters -f \$monitors pull
 }
 
 ps() {
-    sudo docker-compose -f $clearml -f $exporters -f $monitors ps
+    sudo docker-compose -f \$clearml -f \$exporters -f \$monitors ps
 }
 
 exec() {
-    sudo docker-compose -f $clearml -f $exporters -f $monitors exec "$@"
+    sudo docker-compose -f \$clearml -f \$exporters -f \$monitors exec "$@"
 }
 
 config() {
-    sudo docker-compose -f $clearml -f $exporters -f $monitors config
+    sudo docker-compose -f \$clearml -f \$exporters -f \$monitors config
 }
 
 case "\$1" in
