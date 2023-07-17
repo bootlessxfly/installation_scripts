@@ -290,7 +290,7 @@ networks:
 EOF
 
 # Create docker-compose.exporters.yml
-cat > docker-compose.exporters.yml << 'EOF'
+cat > $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS << 'EOF'
 version: "3.6"
 services:
   mongodb_exporter:
