@@ -284,17 +284,41 @@ services:
 # Create Prometheus config file
 cat <<EOF > $CONFIG_DIR/prometheus.yml
 global:
-  scrape_interval:     15s
+  scrape_interval: 15s
   evaluation_interval: 15s
 
 scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
-  - job_name: 'clearml'
-    scrape_interval: 5s
+
+  - job_name: 'clearml-webserver'
     static_configs:
-      - targets: ['localhost:8080']
+      - targets: ['clearml-webserver:8080']
+
+  - job_name: 'async-delete'
+    static_configs:
+      - targets: ['async-delete:8080']
+
+  - job_name: 'clearml-apiserver'
+    static_configs:
+      - targets: ['clearml-apiserver:8008']
+
+  - job_name: 'clearml-elastic'
+    static_configs:
+      - targets: ['clearml-elastic:9200']
+
+  - job_name: 'clearml-redis'
+    static_configs:
+      - targets: ['clearml-redis:6379']
+
+  - job_name: 'clearml-fileserver'
+    static_configs:
+      - targets: ['clearml-fileserver:8081']
+
+  - job_name: 'clearml-mongo'
+    static_configs:
+      - targets: ['clearml-mongo:27017']
 EOF
 
 # Deploy clearml stack with docker compose
