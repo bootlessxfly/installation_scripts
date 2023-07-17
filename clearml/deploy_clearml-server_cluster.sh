@@ -331,6 +331,80 @@ EOF
 # Deploy clearml stack with docker compose
 sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE up -d
 
+# Use cat to create the script file
+cat > clearml_stack.sh << 'EOF'
+#!/bin/bash
+
+start() {
+    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE up -d
+}
+
+stop() {
+    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE down
+}
+
+restart() {
+    stop
+    start
+}
+
+logs() {
+    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE logs
+}
+
+pull() {
+    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE pull
+}
+
+ps() {
+    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE ps
+}
+
+exec() {
+    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE exec "$@"
+}
+
+config() {
+    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE config
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        restart
+        ;;
+    logs)
+        logs
+        ;;
+    pull)
+        pull
+        ;;
+    ps)
+        ps
+        ;;
+    exec)
+        shift  # remove the first parameter
+        exec "$@"
+        ;;
+    config)
+        config
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|restart|logs|pull|ps|exec|config}"
+        exit 1
+esac
+
+EOF
+
+# Make the script executable
+chmod +x clearml_stack.sh
+
+
 echo "Please view logs of your deployment with:"
 echo "sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE logs"
 
