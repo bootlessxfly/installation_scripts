@@ -332,8 +332,12 @@ EOF
 sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE up -d
 
 # Use cat to create the script file
-cat > clearml_stack.sh << 'EOF'
+cat <<EOF > $CONFIG_DIR/clearml-manager.sh
 #!/bin/bash
+echo "This script is used to manage the state of the cluster deployed with the clearml/monitoring compose"
+DOCKER_COMPOSE_FILE='$DOCKER_COMPOSE_FILE'
+DOCKER_COMPOSE_PROMETHEUS_EXPORTERS='$DOCKER_COMPOSE_PROMETHEUS_EXPORTERS'
+MONITORING_FILE='$MONITORING_FILE'
 
 start() {
     sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE up -d
