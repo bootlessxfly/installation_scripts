@@ -335,16 +335,16 @@ sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORT
 cat <<EOF > $CONFIG_DIR/clearml-manager.sh
 #!/bin/bash
 echo "This script is used to manage the state of the cluster deployed with the clearml/monitoring compose"
-DOCKER_COMPOSE_FILE='$DOCKER_COMPOSE_FILE'
-DOCKER_COMPOSE_PROMETHEUS_EXPORTERS='$DOCKER_COMPOSE_PROMETHEUS_EXPORTERS'
-MONITORING_FILE='$MONITORING_FILE'
+clearml='$DOCKER_COMPOSE_FILE'
+exporters='$DOCKER_COMPOSE_PROMETHEUS_EXPORTERS'
+monitors='$MONITORING_FILE'
 
 start() {
-    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE up -d
+    sudo docker-compose -f $clearml -f $exporters -f $monitors up -d
 }
 
 stop() {
-    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE down
+    sudo docker-compose -f $clearml -f $exporters -f $monitors down
 }
 
 restart() {
@@ -353,26 +353,26 @@ restart() {
 }
 
 logs() {
-    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE logs
+    sudo docker-compose -f $clearml -f $exporters -f $monitors logs
 }
 
 pull() {
-    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE pull
+    sudo docker-compose -f $clearml -f $exporters -f $monitors pull
 }
 
 ps() {
-    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE ps
+    sudo docker-compose -f $clearml -f $exporters -f $monitors ps
 }
 
 exec() {
-    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE exec "$@"
+    sudo docker-compose -f $clearml -f $exporters -f $monitors exec "$@"
 }
 
 config() {
-    sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE config
+    sudo docker-compose -f $clearml -f $exporters -f $monitors config
 }
 
-case "$1" in
+case "\$1" in
     start)
         start
         ;;
