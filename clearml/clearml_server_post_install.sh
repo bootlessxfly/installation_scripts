@@ -1,5 +1,7 @@
 #!/bin/bash
 
+GRAFANA_API_URL="http://localhost:3000/api"
+
 GRAFANA_ADMIN_USER="admin"
 GRAFANA_ADMIN_PASSWORD="admin"
 
@@ -90,85 +92,24 @@ create_data_source "Redis" "redis" "http://redis:6379" "proxy"
 printf "Redis data source created.\n"
 
 # Create dashboards
-create_dashboard "System Metrics Dashboard" '[
-  {
-    "title": "CPU Usage",
-    "type": "graph",
-    "datasource": "Prometheus",
-    "targets": [
-      { "expr": "cpu_usage", "refId": "A" }
-    ]
-  },
-  {
-    "title": "Memory Usage",
-    "type": "graph",
-    "datasource": "Prometheus",
-    "targets": [
-      { "expr": "memory_usage", "refId": "B" }
-    ]
-  }
-]'
-printf "System Metrics Dashboard created.\n"
-
-create_dashboard "Elasticsearch Dashboard" '[
-  {
-    "title": "Index Size",
-    "type": "graph",
-    "datasource": "Elasticsearch",
-    "targets": [
-      { "expr": "index_size", "refId": "A" }
-    ]
-  },
-  {
-    "title": "Documents Count",
-    "type": "graph",
-    "datasource": "Elasticsearch",
-    "targets": [
-      { "expr": "documents_count", "refId": "B" }
-    ]
-  }
-]'
-printf "Elasticsearch Dashboard created.\n"
-
-create_dashboard "MongoDB Dashboard" '[
-  {
-    "title": "Collection Size",
-    "type": "graph",
-    "datasource": "MongoDB",
-    "targets": [
-      { "expr": "collection_size", "refId": "A" }
-    ]
-  },
-  {
-    "title": "Documents Count",
-    "type": "graph",
-    "datasource": "MongoDB",
-    "targets": [
-      { "expr": "documents_count", "refId": "B" }
-    ]
-  }
-]'
-printf "MongoDB Dashboard created.\n"
-
-create_dashboard "Redis Dashboard" '[
-  {
-    "title": "Memory Usage",
-    "type": "graph",
-    "datasource": "Redis",
-    "targets": [
-      { "expr": "memory_usage", "refId": "A" }
-    ]
-  },
-  {
-    "title": "Commands Processed",
-    "type": "graph",
-    "datasource": "Redis",
-    "targets": [
-      { "expr": "commands_processed", "refId": "B" }
-    ]
-  }
-]'
-printf "Redis Dashboard created.\n"
-
-# Clean up JSON files
-rm datasource.json dashboard.json
+printf "Creating System Metrics Dashboard\n"
+curl -s -X POST \
+  -H "Content-Type: application/json" \
+  -u "$GRAFANA_ADMIN_USER:$GRAFANA_ADMIN_PASSWORD" \
+  -d '{
+    "dashboard": {
+      "title": "System Metrics Dashboard",
+      "panels": [
+        {
+          "title": "Panel 1",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            { "expr": "up", "refId": "A" }
+          ]
+        }
+      ]
+    },
+    "overwrite": false
+  }' \
+  "$GRAFANA_API_URL/dashboards/db"
