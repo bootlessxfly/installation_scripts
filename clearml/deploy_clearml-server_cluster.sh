@@ -279,6 +279,13 @@ services:
         limits:
           cpus: '$GRAFANA_CPU_LIMIT'
           memory: $GRAFANA_MEMORY_LIMIT
+
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
+
 EOF
 
 # Prometheus config
