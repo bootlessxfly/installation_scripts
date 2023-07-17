@@ -161,7 +161,7 @@ fi
 # Check if docker compose exists
 if command -v docker-compose &> /dev/null; then
     # Check if docker compose has been deployed before
-    if [ "$(docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE ps -q)" ]; then
+    if [ "$(sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE ps -q)" ]; then
       if [ "$PURGE" == "true" ]; then
         echo "Purging existing docker compose deployment..."
         sudo docker-compose -f $DOCKER_COMPOSE_FILE -f $DOCKER_COMPOSE_PROMETHEUS_EXPORTERS -f $MONITORING_FILE down
