@@ -290,6 +290,7 @@ services:
     command: --es.uri=http://elasticsearch:9200
     ports:
       - "9108:9108"
+      - "9114:9114"
 
   redis_exporter:
     image: oliver006/redis_exporter:latest
@@ -320,7 +321,7 @@ scrape_configs:
 
   - job_name: 'elasticsearch'
     static_configs:
-      - targets: ['elasticsearch_exporter:9108']
+      - targets: ['elasticsearch_exporter:9114']
 
   - job_name: 'redis'
     static_configs:
