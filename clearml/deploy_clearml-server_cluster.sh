@@ -279,6 +279,7 @@ services:
         limits:
           cpus: '$GRAFANA_CPU_LIMIT'
           memory: $GRAFANA_MEMORY_LIMIT
+EOF
 
 # Prometheus config
 # Create Prometheus config file
