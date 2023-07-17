@@ -251,7 +251,7 @@ services:
     ports:
       - 9090:9090
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/etc/prometheus
     networks:
       - backend
       - frontend
@@ -265,6 +265,8 @@ services:
     image: grafana/grafana:latest
     ports:
       - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
     networks:
       - backend
       - frontend
@@ -273,6 +275,10 @@ services:
         limits:
           cpus: '$GRAFANA_CPU_LIMIT'
           memory: $GRAFANA_MEMORY_LIMIT
+
+volumes:
+  prometheus_data:
+  grafana_data:
 EOF
 
 # Create docker-compose.exporters.yml
