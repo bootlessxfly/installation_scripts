@@ -252,6 +252,7 @@ services:
       - 9090:9090
     volumes:
       - prometheus_data:/etc/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - backend
       - frontend
