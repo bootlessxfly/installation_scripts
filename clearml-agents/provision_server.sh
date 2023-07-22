@@ -146,11 +146,22 @@ if [ "$INSTALL_NVIDIA" = true ] ; then
     echo "After reboot, you can check the NVIDIA and CUDA installation by running the following commands:"
     echo "lsmod | grep nvidia"
     echo "nvidia-smi"
-fi
+elif [ "$INSTALL_AMD" = true ] ; then
+    # Install ROCm
+    echo "Installing ROCm..."
+    echo 'deb [arch=amd64] https://repo.radeon.com/rocm/apt/debian/ ubuntu main' | sudo tee /etc/apt/sources.list.d/rocm.list
+    wget -qO - https://repo.radeon.com/rocm/rocm.gpg.key | sudo apt-key add -
+    sudo apt-get update
+    sudo apt-get install rocm-dkms
+    sudo usermod -a -G video $LOGNAME
+    echo "ROCm installation completed."
 
-if [ "$INSTALL_AMD" = true ] ; then
-    # Install ROCm for AMD
-    echo "ROCm installation steps go here..."
+    # Print the commands to check ROCm installation
+    echo "After reboot, you can check the ROCm installation by running the following commands:"
+    echo "/opt/rocm/bin/rocminfo"
+    echo "/opt/rocm/opencl/bin/clinfo"
+else
+    echo "GPU driver installation was skipped."
 fi
 
 # Reboot reminder
