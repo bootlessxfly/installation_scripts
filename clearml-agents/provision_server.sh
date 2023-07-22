@@ -160,6 +160,7 @@ elif [ "$INSTALL_AMD" = true ] ; then
     echo "After reboot, you can check the ROCm installation by running the following commands:"
     echo "/opt/rocm/bin/rocminfo"
     echo "/opt/rocm/opencl/bin/clinfo"
+    echo "rocm-smi"
 else
     echo "GPU driver installation was skipped."
 fi
