@@ -5,6 +5,7 @@ DEFAULT_DNS="8.8.8.8"
 INSTALL_NVIDIA=false
 INSTALL_AMD=false
 IP_NEEDED=true
+GPU_NEEDED=true
 
 # Display Help function
 function display_help() {
@@ -16,7 +17,7 @@ function display_help() {
     echo "5. Prints a reminder to reboot the system."
     echo "6. Prints commands to check the NVIDIA, CUDA, or ROCm installation."
     echo
-    echo "Usage: sudo bash provision.sh --ip [IP_ADDRESS] --gateway [GATEWAY_IP] --interface [INTERFACE] --dns [DNS_SERVER] --no-ip-needed --nvidia-gpu --amd-gpu"
+    echo "Usage: sudo bash provision.sh --ip [IP_ADDRESS] --gateway [GATEWAY_IP] --interface [INTERFACE] --dns [DNS_SERVER] --no-ip-needed --nvidia-gpu --amd-gpu --no-gpu"
     echo
     echo "Arguments:"
     echo "--ip [IP_ADDRESS]: The static IP address you want to set for this machine. Required unless --no-ip-needed is specified."
@@ -26,10 +27,10 @@ function display_help() {
     echo "--no-ip-needed: If set, the script will not configure a static IP address. This option cannot be combined with --ip, --gateway, --interface, or --dns."
     echo "--nvidia-gpu: If set, the script will install NVIDIA drivers and CUDA. This option cannot be combined with --amd-gpu."
     echo "--amd-gpu: If set, the script will install ROCm for AMD GPUs. This option cannot be combined with --nvidia-gpu."
+    echo "--no-gpu: If set, the script will not install any GPU drivers. This option overrides --nvidia-gpu and --amd-gpu."
     echo
     echo "You must specify either --nvidia-gpu or --amd-gpu, but not both."
 }
-
 
 # Function to validate IP addresses
 function validate_ip() {
@@ -68,6 +69,8 @@ while [ "$1" != "" ]; do
         --nvidia-gpu )   INSTALL_NVIDIA=true
                          ;;
         --amd-gpu )      INSTALL_AMD=true
+                         ;;
+        --no-gpu )       GPU_NEEDED=false
                          ;;
         --help )         display_help
                          exit
@@ -133,7 +136,7 @@ fi
 echo "Upgrading the system..."
 apt-get update && apt-get upgrade -y
 
-if [ "$INSTALL_NVIDIA" = true ] ; then
+if [ "$INSTALL_NVIDIA" = true ] && [ "$GPU_NEEDED" = true ]; then
     # Install NVIDIA drivers and CUDA
     echo "Installing latest NVIDIA drivers and CUDA..."
     add-apt-repository ppa:graphics-drivers/ppa -y
@@ -146,24 +149,26 @@ if [ "$INSTALL_NVIDIA" = true ] ; then
     echo "After reboot, you can check the NVIDIA and CUDA installation by running the following commands:"
     echo "lsmod | grep nvidia"
     echo "nvidia-smi"
-elif [ "$INSTALL_AMD" = true ] ; then
+elif [ "$INSTALL_AMD" = true ] && [ "$GPU_NEEDED" = true ]; then
     # Install ROCm
     echo "Installing ROCm..."
-    echo 'deb [arch=amd64] https://repo.radeon.com/rocm/apt/debian/ ubuntu main' | sudo tee /etc/apt/sources.list.d/rocm.list
-    wget -qO - https://repo.radeon.com/rocm/rocm.gpg.key | sudo apt-key add -
-    sudo apt-get update
-    sudo apt-get install rocm-dkms
-    sudo usermod -a -G video $LOGNAME
+    echo 'deb [arch=amd64] https://repo.radeon.com/rocm/apt/debian/ ubuntu main' | sudo tee /etc/apt/sources.list
+    apt-key adv --fetch-keys https://repo.radeon.com/rocm/rocm.gpg.key
+    apt-get update
+    apt-get install rocm-dkms
+    echo 'ADD_EXTRA_GROUPS=1' | sudo tee -a /etc/adduser.conf
+    echo 'EXTRA_GROUPS="video"' | sudo tee -a /etc/adduser.conf
     echo "ROCm installation completed."
 
     # Print the commands to check ROCm installation
     echo "After reboot, you can check the ROCm installation by running the following commands:"
     echo "/opt/rocm/bin/rocminfo"
-    echo "/opt/rocm/opencl/bin/clinfo"
-    echo "rocm-smi"
+    echo "/opt/rocm/opencl/bin/x86_64/clinfo"
+elif [ "$GPU_NEEDED" = false ]; then
+    echo "GPU driver installation skipped as per user request."
 else
-    echo "GPU driver installation was skipped."
+    echo "Neither NVIDIA nor AMD GPU driver installation specified. Skipping GPU driver installation."
 fi
 
-# Reboot reminder
-echo "Please reboot your system for the changes to take effect."
+# Remind user to reboot
+echo "Remember to reboot your system to complete the installation process!"
